@@ -12,7 +12,9 @@ public:
     EasiAVEditorGenerator();
     explicit EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Value jsonAudiolist, Json::Value jsonZoomlist, Json::Value jsonGlobalinfo);
     ~EasiAVEditorGenerator();
-    void start();
+    void setProgressReportcb(progresscbfun func);
+    void setMsgReportcb(msgcbfun func);
+    bool start();
     void stop();
 
 private:
@@ -36,6 +38,8 @@ private:
     void generate_audio_multitracks();
 
     //add transition
+    void generate_audio_mix();
+    void generate_video_composite();
     void add_audio_mix_transition(uint16_t a_track, uint16_t b_track);
     void add_video_overlay_transition(uint16_t a_track, uint16_t b_track);
 
@@ -43,11 +47,14 @@ private:
     void add_zoom_animation_filter();
 
     //consumer settings
+    void generate_consumer_settings();
     void add_xml_consumer_settings();
     void add_avformat_consumer_settings();
 
-    bool generate_para();
+    //generate the final melt parameters
+    bool generate_parameters();
 
+    //formatting string and print to log
     void formatting_parameters();
 
 private:
@@ -62,7 +69,7 @@ private:
     std::string _zoomlistPara;//store zoom in/out temp para.
     std::string _consumerPara;//store xml or avforamt consumer's configuration
 
-    std::string _meltParameters;//final melt parameters
-    std::unique_ptr<MeltService> _pmeltService;
+    std::string _MeltParameters;//final melt parameters
+    std::unique_ptr<MeltService> _pMeltService;
 };
 

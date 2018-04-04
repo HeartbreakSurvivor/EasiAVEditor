@@ -14,18 +14,34 @@ EasiAVEditorGenerator::EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Va
     , _audiotracks(0)
     , _tracks(0)
 {
+    _pMeltService = std::make_unique<MeltService>();
 }
 
 EasiAVEditorGenerator::~EasiAVEditorGenerator()
 {
+    _pMeltService.release();
 }
 
-void EasiAVEditorGenerator::start()
+void EasiAVEditorGenerator::setProgressReportcb(progresscbfun func)
 {
+    _pMeltService->ProgressReport_cbfun(func);
+}
+
+void EasiAVEditorGenerator::setMsgReportcb(msgcbfun func)
+{
+    _pMeltService->MsgReport_cbfun(func);
+}
+
+bool EasiAVEditorGenerator::start()
+{
+    if (!generate_parameters()) return false;
+    _pMeltService->Startmelt(_MeltParameters);
+    return true;
 }
 
 void EasiAVEditorGenerator::stop()
 {
+    _pMeltService->Stopmelt();
 }
 
 void EasiAVEditorGenerator::attach_video_fadein_filter(const std::string & in, const std::string & out)
@@ -80,6 +96,14 @@ void EasiAVEditorGenerator::generate_audio_multitracks()
 {
 }
 
+void EasiAVEditorGenerator::generate_audio_mix()
+{
+}
+
+void EasiAVEditorGenerator::generate_video_composite()
+{
+}
+
 void EasiAVEditorGenerator::add_audio_mix_transition(uint16_t a_track, uint16_t b_track)
 {
 }
@@ -92,17 +116,33 @@ void EasiAVEditorGenerator::add_zoom_animation_filter()
 {
 }
 
+void EasiAVEditorGenerator::generate_consumer_settings()
+{
+    if (!_zoomlistPara.empty()) {
+        add_xml_consumer_settings();
+    }
+    else {
+
+    }
+}
+
 void EasiAVEditorGenerator::add_xml_consumer_settings()
 {
 }
 
 void EasiAVEditorGenerator::add_avformat_consumer_settings()
 {
+    //-progress2 -getc
 }
 
-bool EasiAVEditorGenerator::generate_para()
+bool EasiAVEditorGenerator::generate_parameters()
 {
-    return false;
+    generate_video_multitracks();
+    generate_audio_multitracks();
+    generate_audio_mix();
+    generate_video_composite();
+    generate_consumer_settings();
+    return true;
 }
 
 void EasiAVEditorGenerator::formatting_parameters()

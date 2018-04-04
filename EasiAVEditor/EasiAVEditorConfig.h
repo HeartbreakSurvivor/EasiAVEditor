@@ -11,8 +11,7 @@ const std::string AB = " ab = 192k";
 const std::string AC = " ac = 2";
 
 //json key
-const static std::string JSON_WIDTH = "width";
-const static std::string JSON_HEIGHT = "height";
+const static std::string VIDEO_PATH = "width";
+const static std::string ABO = "height";
 const static std::string JSON_FRAME_RATE = "farame_rate";
 const static std::string JSON_TARGET_PATH = "target";
-

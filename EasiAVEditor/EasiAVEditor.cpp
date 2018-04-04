@@ -20,14 +20,9 @@ bool av_editor_create(const std::string &videotracklist, const std::string &audi
     return true;
 }
 
-void av_editor_release()
+bool av_editor_start()
 {
-    EasiAVEditor.release();
-}
-
-void av_editor_start()
-{
-    EasiAVEditor->start();
+    return EasiAVEditor->start();
 }
 
 void av_editor_stop()
@@ -35,7 +30,12 @@ void av_editor_stop()
     EasiAVEditor->stop();
 }
 
-void av_editor_register_progresscb()
+void av_editor_register_progresscb(progresscbfun cb)
 {
+    EasiAVEditor->setProgressReportcb(cb);
+}
 
+void av_editor_register_msgcb(msgcbfun cb)
+{
+    EasiAVEditor->setMsgReportcb(cb);
 }
