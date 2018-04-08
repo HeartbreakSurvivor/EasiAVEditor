@@ -5,6 +5,18 @@
 #include "MeltService.h"
 #include <json\json.h>
 #include <Logger\Logger.h>
+#include <utils\PathUtils.h>
+
+class LoggerGuard
+{
+public:
+    LoggerGuard() {
+        InitLogger("Meltservice", PathUtils::GetSystemAppDataPath() + "\\jjs\\Log", 10, 10);
+    }
+    ~LoggerGuard() {
+        ReleaseLogger();
+    }
+};
 
 class EasiAVEditorGenerator
 {
@@ -75,5 +87,7 @@ private:
 
     std::string _MeltParameters;//final melt parameters
     std::unique_ptr<MeltService> _pMeltService;
+
+    LoggerGuard _logger;
 };
 

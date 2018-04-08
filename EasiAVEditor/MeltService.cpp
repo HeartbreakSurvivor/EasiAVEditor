@@ -6,6 +6,8 @@
 #include <Logger\Logger.h>
 
 MeltService::MeltService()
+    : _prevousPercent(0)
+    , _bIsRunning(false)
 {
 }
 
@@ -13,24 +15,38 @@ MeltService::~MeltService()
 {
 }
 
-void MeltService::Startmelt(const std::string & para)
+bool MeltService::Startmelt(const std::string & para)
 {
+    if (!_progresscb || !_msgcb) return false;
+    if (_bIsRunning) return false;
+    _bIsRunning = true;
     const std::wstring lpara = CharsetUtils::UTF8StringToUnicodeString(para);
     _thread = std::make_unique<std::thread>(&MeltService::WorkingThread, this, lpara);
     _thread->join();
+    return true;
 }
 
-void MeltService::AsyncStartmelt(const std::string & para)
+bool MeltService::AsyncStartmelt(const std::string & para)
 {
+    if (!_progresscb || !_msgcb) return false;
+    if (_bIsRunning) return false;
+    _bIsRunning = true;
     const std::wstring lpara = CharsetUtils::UTF8StringToUnicodeString(para);
-
     _thread = std::make_unique<std::thread>(&MeltService::WorkingThread, this, lpara);
     _thread->detach();
+    return true;
 }
 
 bool MeltService::Stopmelt()
 {
+    if (!_bIsRunning) return false;
+    //terminate the melt process
+    DWORD ret = TerminateProcess(_pi.hProcess, 0);
+    if (ret == 0) {
+        GLERROR << "kill melt process failed, error code :" << GetLastError();
+    }
     _thread->join();
+    _bIsRunning = false;
     return true;
 }
 
@@ -46,26 +62,20 @@ void MeltService::MsgReport_cbfun(msgcbfun func)
 
 std::wstring MeltService::Get_melt_Path()
 {
-    LPTSTR cWinDir = new TCHAR[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, cWinDir);
-    //LPTSTR sConLin = wcscat_s(cWinDir, MAX_PATH, L"\\..\\Debug\\another.exe a b c d");
-    return std::wstring();
+    //std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\Extensions\\MeltModules\\melt.exe";
+    std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\melt.exe";
+    return appPath;
 }
 
 void MeltService::WorkingThread(const std::wstring &paras)
 {
     int timeout = 1000;
     std::wstring executePath = Get_melt_Path();
-    std::wstring parameters = paras;
     std::wstring comlin = executePath + std::wstring(L" ") + paras;
 
     LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
-    LPTSTR cWinDir = new TCHAR[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, cWinDir);
-    //LPTSTR sCon1Lin = wcscat(cWinDir, L"\\..\\Debug\\another.exe a b c d");
-
-    //create a anontmous pipe 
+    //create a anonymous pipe 
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
@@ -76,7 +86,6 @@ void MeltService::WorkingThread(const std::wstring &paras)
 
     //create the melt.exe process
     STARTUPINFO si;
-    PROCESS_INFORMATION pi;
     si.cb = sizeof(STARTUPINFO);
     GetStartupInfo(&si);
     si.hStdError = _pipeInputWrite; //connect the stderr endpoint of process to write endpoint of anonymous pipe. so we can read the output from the pipe.
@@ -84,7 +93,7 @@ void MeltService::WorkingThread(const std::wstring &paras)
     si.wShowWindow = SW_HIDE;
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     
-    if (!CreateProcess(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &pi))
+    if (!CreateProcess(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &_pi))
     {
         CloseHandle(_pipeInputWrite);
         CloseHandle(_pipeOutputRead);
@@ -97,32 +106,24 @@ void MeltService::WorkingThread(const std::wstring &paras)
     while (true)
     {
         //int ret = WaitForSingleObject(shExecInfo.hProcess, timeout);
-        int ret = WaitForSingleObject(pi.hProcess, timeout);
+        int ret = WaitForSingleObject(_pi.hProcess, timeout);
         if (ret == WAIT_TIMEOUT) {
             //read the melt output and notify application progress.
-            if (_progresscb) {
-                _progresscb(20);
-            }
+            _progresscb(20);
         }
         else if (ret == WAIT_OBJECT_0) {
             //the process has been finished and notify application and return.
-            if (_msgcb) {
-                _msgcb(1);
-            }
+            _msgcb(1);
         }
         else if (ret == WAIT_FAILED) {
             //notify error occurs and return.
-            if (_msgcb) {
-                _msgcb(-1);
-            }
+            _msgcb(-1);
             return;
         }
 
         int res = ReadFile(_pipeOutputRead, buffer, 4096, &bytesRead, NULL);
         if (!res || bytesRead == 0) {
-            if (_msgcb) {
-                _msgcb(-2);
-            }
+            _msgcb(-2);
             break;
         }
 
@@ -133,12 +134,10 @@ void MeltService::WorkingThread(const std::wstring &paras)
             if ((index + 11) < s.length()) {
                 std::string tmpstr;
                 tmpstr.assign(s[index+11], s[index + 11]);    
-                int percent = atoi(s.c_str());
+                int percent = atoi(tmpstr.c_str());
                 if(percent!= _prevousPercent)
-                if (_progresscb) {
-                    _progresscb(percent);
-                    _prevousPercent = percent;
-                }
+                _progresscb(percent);
+                _prevousPercent = percent;
             }
         }
     }

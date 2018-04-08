@@ -1,7 +1,6 @@
 #include "EasiAVEditorGenerator.h"
 #include <time.h>
 
-
 EasiAVEditorGenerator::EasiAVEditorGenerator()
 {
 }
@@ -14,6 +13,7 @@ EasiAVEditorGenerator::EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Va
     , _videotracks(0)
     , _audiotracks(0)
     , _tracks(0)
+    , _logger()
 {
     _pMeltService = std::make_unique<MeltService>();
 }
@@ -36,8 +36,7 @@ void EasiAVEditorGenerator::setMsgReportcb(msgcbfun func)
 bool EasiAVEditorGenerator::start()
 {
     if (!generate_parameters()) return false;
-    _pMeltService->Startmelt(_MeltParameters);
-    return true;
+    return _pMeltService->AsyncStartmelt(_MeltParameters);
 }
 
 void EasiAVEditorGenerator::stop()

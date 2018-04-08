@@ -7,12 +7,12 @@ const static double GAIN_MAX = 15.8489f;
 
 //consumer related settings
 const unsigned int FRAMET_RATE = 25;
-const std::string VIDEO_CODEC = " vcodec = mpeg4";
-const std::string AUDIO_CODEC = " acodec = aac";
-const std::string VIDEO_BITRATE = " vb = 4M";
-const std::string AUDIO_SAMPLE_RATE= " ar = 48000";
-const std::string AUDIO_BITRATE = " ab = 192k";
-const std::string AUDIO_CHANNEL = " ac = 2";
+const std::string VIDEO_CODEC = " vcodec=mpeg4";
+const std::string AUDIO_CODEC = " acodec=aac";
+const std::string VIDEO_BITRATE = " vb=4M";
+const std::string AUDIO_SAMPLE_RATE= " ar=48000";
+const std::string AUDIO_BITRATE = " ab=192k";
+const std::string AUDIO_CHANNEL = " ac=2";
 
 //track json key
 const static std::string RESOURCE_PATH = "path";

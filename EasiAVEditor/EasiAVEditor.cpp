@@ -15,19 +15,8 @@ bool av_editor_create(const std::string &videotracklist, const std::string &audi
         !jsonReader.parse(global_info, jsonGlobalinfo)) {
         return false;
     }
-
     EasiAVEditor = std::make_unique<EasiAVEditorGenerator>(jsonVideolist,jsonAudiolist,jsonZoomlist,jsonGlobalinfo);
     return true;
-}
-
-bool av_editor_start()
-{
-    return EasiAVEditor->start();
-}
-
-void av_editor_stop()
-{
-    EasiAVEditor->stop();
 }
 
 void av_editor_register_progresscb(progresscbfun cb)
@@ -38,4 +27,14 @@ void av_editor_register_progresscb(progresscbfun cb)
 void av_editor_register_msgcb(msgcbfun cb)
 {
     EasiAVEditor->setMsgReportcb(cb);
+}
+
+bool av_editor_start()
+{
+    return EasiAVEditor->start();
+}
+
+void av_editor_stop()
+{
+    EasiAVEditor->stop();
 }

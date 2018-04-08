@@ -14,8 +14,8 @@ public:
     MeltService();
     ~MeltService();
 
-    void Startmelt(const std::string &para);
-    void AsyncStartmelt(const std::string &para);
+    bool Startmelt(const std::string &para);
+    bool AsyncStartmelt(const std::string &para);
     bool Stopmelt();
     void ProgressReport_cbfun(progresscbfun func);
     void MsgReport_cbfun(msgcbfun func);
@@ -29,6 +29,8 @@ private:
     progresscbfun _progresscb = nullptr;
     msgcbfun _msgcb = nullptr;
     HANDLE _pipeOutputRead, _pipeInputWrite;
+    PROCESS_INFORMATION _pi;
     int _prevousPercent;
+    bool _bIsRunning;
 };
 
