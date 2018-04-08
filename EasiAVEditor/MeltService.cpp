@@ -13,13 +13,19 @@ MeltService::~MeltService()
 {
 }
 
-bool MeltService::Startmelt(const std::string & para)
+void MeltService::Startmelt(const std::string & para)
+{
+    const std::wstring lpara = CharsetUtils::UTF8StringToUnicodeString(para);
+    _thread = std::make_unique<std::thread>(&MeltService::WorkingThread, this, lpara);
+    _thread->join();
+}
+
+void MeltService::AsyncStartmelt(const std::string & para)
 {
     const std::wstring lpara = CharsetUtils::UTF8StringToUnicodeString(para);
 
     _thread = std::make_unique<std::thread>(&MeltService::WorkingThread, this, lpara);
     _thread->detach();
-    return true;
 }
 
 bool MeltService::Stopmelt()
@@ -122,7 +128,7 @@ void MeltService::WorkingThread(const std::wstring &paras)
 
         std::string s(std::begin(buffer) + 8, std::end(buffer) - 1);
         GLINFO << s;
-        int index = s.find("percentage:");
+        unsigned int index = s.find("percentage:");
         if (index != std::string::npos) {
             if ((index + 11) < s.length()) {
                 std::string tmpstr;

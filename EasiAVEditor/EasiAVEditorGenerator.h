@@ -38,24 +38,25 @@ private:
     void generate_audio_multitracks();
 
     //add transition
-    void generate_audio_mix();
-    void generate_video_composite();
+    void generate_transitions();
     void add_audio_mix_transition(uint16_t a_track, uint16_t b_track);
     void add_video_overlay_transition(uint16_t a_track, uint16_t b_track);
 
     //attach zoom animation
+    void add_geometry();
     void add_zoom_animation_filter();
 
     //consumer settings
     void generate_consumer_settings();
-    void add_xml_consumer_settings();
-    void add_avformat_consumer_settings();
 
     //generate the final melt parameters
     bool generate_parameters();
 
     //formatting string and print to log
     void formatting_parameters();
+
+    //according to command line parameters to generate mlt file
+    void generate_mlt_file();
 
 private:
     int _videotracks, _audiotracks, _tracks;//all kinds of tracks
@@ -66,8 +67,11 @@ private:
 
     std::vector<std::vector<std::string>> _videoMultitrack;//store multi video track's parameters.
     std::vector<std::vector<std::string>> _audioMultitrack;//store multi audio tracks's parameters.
+    std::string _transitionPara;//store zoom in/out temp para.
     std::string _zoomlistPara;//store zoom in/out temp para.
     std::string _consumerPara;//store xml or avforamt consumer's configuration
+
+    std::string _mltfilepath;//store the temp mlt file's name and path.
 
     std::string _MeltParameters;//final melt parameters
     std::unique_ptr<MeltService> _pMeltService;

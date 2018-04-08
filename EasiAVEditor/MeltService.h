@@ -14,7 +14,8 @@ public:
     MeltService();
     ~MeltService();
 
-    bool Startmelt(const std::string &para);
+    void Startmelt(const std::string &para);
+    void AsyncStartmelt(const std::string &para);
     bool Stopmelt();
     void ProgressReport_cbfun(progresscbfun func);
     void MsgReport_cbfun(msgcbfun func);
@@ -22,7 +23,6 @@ public:
 private:
     std::wstring Get_melt_Path();
     void WorkingThread(const std::wstring & paras);
-
     
 private:
     std::unique_ptr<std::thread> _thread;
