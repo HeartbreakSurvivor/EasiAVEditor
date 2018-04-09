@@ -35,8 +35,9 @@ void EasiAVEditorGenerator::setMsgReportcb(msgcbfun func)
 
 bool EasiAVEditorGenerator::start()
 {
-    if (!generate_parameters()) return false;
-    return _pMeltService->AsyncStartmelt(_MeltParameters);
+    //if (!generate_parameters()) return false;
+    //return _pMeltService->AsyncStartmelt(_MeltParameters);
+    return _pMeltService->AsyncStartmelt(" D:\\Code\\EasiAVEditor\\Debug\\videos\\big_buck_1_min.mp4 in=\"00:00:10.000\" out=\"00:00:40.000\" -progress -consumer avformat:D:\\Code\\EasiAVEditor\\Debug\\videos\\slow.mp4"); 
 }
 
 void EasiAVEditorGenerator::stop()

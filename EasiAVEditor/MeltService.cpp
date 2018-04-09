@@ -31,6 +31,7 @@ bool MeltService::AsyncStartmelt(const std::string & para)
     if (!_progresscb || !_msgcb) return false;
     if (_bIsRunning) return false;
     _bIsRunning = true;
+    GLINFO << "Async Start the melt process";
     const std::wstring lpara = CharsetUtils::UTF8StringToUnicodeString(para);
     _thread = std::make_unique<std::thread>(&MeltService::WorkingThread, this, lpara);
     _thread->detach();
@@ -39,7 +40,7 @@ bool MeltService::AsyncStartmelt(const std::string & para)
 
 bool MeltService::Stopmelt()
 {
-    if (!_bIsRunning) return false;
+    if (!_bIsRunning) return true;
     //terminate the melt process
     DWORD ret = TerminateProcess(_pi.hProcess, 0);
     if (ret == 0) {
@@ -47,6 +48,7 @@ bool MeltService::Stopmelt()
     }
     _thread->join();
     _bIsRunning = false;
+    GLINFO << "user kill the melt process";
     return true;
 }
 
@@ -69,12 +71,13 @@ std::wstring MeltService::Get_melt_Path()
 
 void MeltService::WorkingThread(const std::wstring &paras)
 {
-    int timeout = 1000;
+    int timeout = 20;
     std::wstring executePath = Get_melt_Path();
-    std::wstring comlin = executePath + std::wstring(L" ") + paras;
+    std::wstring comlin = executePath + paras;
 
     LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
+    //GLINFO << "Melt command line: " << comlin.c_str();
     //create a anonymous pipe 
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -95,12 +98,11 @@ void MeltService::WorkingThread(const std::wstring &paras)
     
     if (!CreateProcess(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &_pi))
     {
-        CloseHandle(_pipeInputWrite);
-        CloseHandle(_pipeOutputRead);
-        return ;
+        GLERROR << "CreateProcess failed, error code:" << GetLastError();
+        goto failed;
     }
     GLINFO << "create pipe and Melt Process success.";
-    char buffer[4096] = { 0 };
+    char buffer[64] = { 0 };
     DWORD bytesRead;
 
     while (true)
@@ -108,37 +110,45 @@ void MeltService::WorkingThread(const std::wstring &paras)
         //int ret = WaitForSingleObject(shExecInfo.hProcess, timeout);
         int ret = WaitForSingleObject(_pi.hProcess, timeout);
         if (ret == WAIT_TIMEOUT) {
-            //read the melt output and notify application progress.
-            _progresscb(20);
+            //time out 
         }
         else if (ret == WAIT_OBJECT_0) {
             //the process has been finished and notify application and return.
-            _msgcb(1);
+            _msgcb(-1);
+            _bIsRunning = false;
+            break;
         }
         else if (ret == WAIT_FAILED) {
             //notify error occurs and return.
             _msgcb(-1);
-            return;
+            _bIsRunning = false;
+            break;
         }
 
-        int res = ReadFile(_pipeOutputRead, buffer, 4096, &bytesRead, NULL);
+        int res = ReadFile(_pipeOutputRead, buffer, 64, &bytesRead, NULL);
         if (!res || bytesRead == 0) {
             _msgcb(-2);
             break;
         }
-
-        std::string s(std::begin(buffer) + 8, std::end(buffer) - 1);
-        GLINFO << s;
+        GLINFO << "bytesRead: " << bytesRead;
+        std::string s(std::begin(buffer), std::begin(buffer) + bytesRead);
+        GLINFO << "extract string: " << s;
         unsigned int index = s.find("percentage:");
         if (index != std::string::npos) {
-            if ((index + 11) < s.length()) {
+            if ((index + std::strlen("percentage:") + 11) <= s.length()) {//this means the distance between 'p' and the last character.
                 std::string tmpstr;
-                tmpstr.assign(s[index+11], s[index + 11]);    
+                tmpstr = s.substr(index + std::strlen("percentage:"), 11);
                 int percent = atoi(tmpstr.c_str());
                 if(percent!= _prevousPercent)
-                _progresscb(percent);
+                    _progresscb(percent);
                 _prevousPercent = percent;
+                GLINFO << "melt output current percentage: " << percent << "%";
             }
         }
     }
+    GLINFO << "Melt Service Process exit";
+
+failed:
+    CloseHandle(_pipeInputWrite);
+    CloseHandle(_pipeOutputRead);
 }

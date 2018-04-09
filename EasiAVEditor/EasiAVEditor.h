@@ -1,5 +1,6 @@
 #pragma once
 
+#define EASIAVEDITOR_EXPORTS
 #ifdef EASIAVEDITOR_EXPORTS
 #define EASIAVEDITOR_API extern "C" __declspec(dllexport)
 #else
