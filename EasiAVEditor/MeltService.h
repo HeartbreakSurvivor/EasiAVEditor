@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <tchar.h>
+#include <atomic>
 
 typedef void(*progresscbfun)(int);
 typedef void(*msgcbfun)(int);
@@ -23,14 +24,17 @@ public:
 private:
     std::wstring Get_melt_Path();
     void WorkingThread(const std::wstring & paras);
+    void ReadWriteThread(void);
     
 private:
-    std::unique_ptr<std::thread> _thread;
+    std::unique_ptr<std::thread> _rwThread;
+    std::unique_ptr<std::thread> _wkThread;
     progresscbfun _progresscb = nullptr;
     msgcbfun _msgcb = nullptr;
     HANDLE _pipeOutputRead, _pipeInputWrite;
     PROCESS_INFORMATION _pi;
-    int _prevousPercent;
-    bool _bIsRunning;
+    int _previousPercent;
+    std::atomic_bool _bIsRunning;
+    std::atomic_bool _bIsAsync;
 };
 

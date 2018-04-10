@@ -5,7 +5,6 @@
 
 using namespace std;
 
-
 void Progressreport(int percent)
 {
     cout << "application current percentage: " << percent << endl;
@@ -14,7 +13,7 @@ void Progressreport(int percent)
 void Msgreport(int num)
 {
     cout << "melt service msg code: " << num << endl;
-    if (num == -1 || num == -2) {
+    if (num == 0 || num == 1) {
         //av_editor_stop();
         exit(1);
     }
@@ -22,6 +21,7 @@ void Msgreport(int num)
 
 int main()
 {
+    string cmd;
     bool res = av_editor_create("A","B","C","D");
     if (!res) {
         std::cout << "easiaveditor create failed." << std::endl;
@@ -35,6 +35,11 @@ int main()
 
     while (true)
     {
+        std::cin >> cmd;
+        if (cmd == "quit") {
+            std::cout << "user quit melt service." << std::endl;
+            av_editor_stop();
+        }
         Sleep(5000);
     }
 }

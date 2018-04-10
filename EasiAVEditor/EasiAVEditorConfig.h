@@ -2,8 +2,8 @@
 #include <string>
 
 //volume gain value 
-const static double GAIN_MIN = 0.00316228f;
-const static double GAIN_MAX = 15.8489f;
+const static double GAIN_MIN = 0.00316228;
+const static double GAIN_MAX = 15.8489;
 
 //consumer related settings
 const unsigned int FRAMET_RATE = 25;
@@ -45,3 +45,11 @@ const static std::string RESOLUTION = "resolution";
 const static std::string TOTAL_DURATION = "totalDuration";
 const static std::string FRAME_RATE = "framerate";
 const static std::string SAMPLERATE = "sampleRate";
+
+//msg type 
+enum MsgType
+{
+    SUCCESS,
+    CREATE_MELT_FAILED,
+    FAILED,
+};
