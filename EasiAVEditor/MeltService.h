@@ -32,6 +32,7 @@ private:
     progresscbfun _progresscb = nullptr;
     msgcbfun _msgcb = nullptr;
     HANDLE _pipeOutputRead, _pipeInputWrite;
+    //HANDLE _pipeOutputRead1, _pipeInputWrite1;
     PROCESS_INFORMATION _pi;
     int _previousPercent;
     std::atomic_bool _bIsRunning;

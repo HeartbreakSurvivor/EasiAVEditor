@@ -51,6 +51,14 @@ bool MeltService::Stopmelt()
     if (ret == 0) {
         GLERROR << "kill melt process failed, error code :" << GetLastError();
     }
+
+    //char buf[] = "qqqqqqqqqq";
+    //DWORD dwBytesWrite;
+    //int si = sizeof(buf);
+    //WriteFile(_pipeInputWrite1, buf, sizeof(buf)-1, &dwBytesWrite, NULL);
+    //if (dwBytesWrite == sizeof(buf)-1) {
+    //    GLINFO << "Send quit signal to Melt Service Process succeed.";
+    //}
     _bIsRunning = false;
     GLINFO << "user kill the Melt Service Process";
     return true;
@@ -81,7 +89,7 @@ void MeltService::WorkingThread(const std::wstring &paras)
     std::wstring comlin = executePath + paras;
     LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
-    //create a anonymous pipe 
+    //create a anonymous pipe to get result from melt process
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = NULL;
@@ -89,6 +97,16 @@ void MeltService::WorkingThread(const std::wstring &paras)
     if (!CreatePipe(&_pipeOutputRead, &_pipeInputWrite, &sa, 0)) {
         return;
     }
+
+    //create a anonymous pipe to send command to melt process
+    //SECURITY_ATTRIBUTES sa1;
+    //sa1.nLength = sizeof(SECURITY_ATTRIBUTES);
+    //sa1.lpSecurityDescriptor = NULL;
+    //sa1.bInheritHandle = TRUE;
+    //if (!CreatePipe(&_pipeOutputRead1, &_pipeInputWrite1, &sa1, 0)) {
+    //    return;
+    //}
+
     //create the read write thread
     _rwThread = std::make_unique<std::thread>(&MeltService::ReadWriteThread, this);
     if (_bIsAsync) {
@@ -101,6 +119,7 @@ void MeltService::WorkingThread(const std::wstring &paras)
     GetStartupInfo(&si);
     si.hStdError = _pipeInputWrite; //connect the stderr endpoint of process to write endpoint of anonymous pipe. so we can read the output from the pipe.
     si.hStdOutput = _pipeInputWrite;    
+    //si.hStdInput = _pipeOutputRead1;//connect the stdinput to the read endpoint of pipe, so we can write data to melt process with pipe.
     si.wShowWindow = SW_HIDE;
     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 
@@ -128,6 +147,8 @@ failed:
     _bIsRunning = false;
     CloseHandle(_pi.hProcess);
     CloseHandle(_pipeInputWrite);
+    //CloseHandle(_pipeOutputRead1);
+    //CloseHandle(_pipeInputWrite1);
     if (!_bIsAsync) {
         if(_rwThread->joinable())
             _rwThread->join();

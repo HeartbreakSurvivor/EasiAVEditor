@@ -14,7 +14,6 @@ void Msgreport(int num)
 {
     cout << "melt service msg code: " << num << endl;
     if (num == 0 || num == 1) {
-        //av_editor_stop();
         exit(1);
     }
 }
