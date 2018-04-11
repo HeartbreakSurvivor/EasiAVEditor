@@ -5,10 +5,31 @@
 
 std::unique_ptr<EasiAVEditorGenerator> EasiAVEditor;
 
-bool av_editor_create(const std::string &videotracklist, const std::string &audiotracklist, const std::string &zoomlist, const std::string &global_info)
+Json::Value GetJson(const std::wstring& path)
+{
+    static std::string s_File;
+
+    Json::Value root;
+    std::ifstream iStream(path.c_str(), std::ios::binary);
+    if (iStream.is_open()) {
+        Json::Reader reader;
+        if (!reader.parse(iStream, root)) {
+            root.clear();
+        }
+        iStream.close();
+    }
+    return root;
+}
+
+
+bool av_editor_create(const char* videotracklist, const char* audiotracklist, const char* zoomlist, const char* global_info)
 {
     Json::Reader jsonReader;
     Json::Value jsonVideolist,jsonAudiolist,jsonZoomlist,jsonGlobalinfo;
+    jsonVideolist = GetJson(L"D:\\Code\\EasiAVEditor\\video.txt");
+    jsonAudiolist = GetJson(L"D:\\Code\\EasiAVEditor\\audio.txt");
+    jsonZoomlist = GetJson(L"D:\\Code\\EasiAVEditor\\zoom.txt");
+    jsonGlobalinfo = GetJson(L"D:\\Code\\EasiAVEditor\\global.txt");
     //if (!jsonReader.parse(videotracklist, jsonVideolist) ||
     //    !jsonReader.parse(audiotracklist, jsonAudiolist) ||
     //    !jsonReader.parse(zoomlist, jsonZoomlist) ||

@@ -19,7 +19,7 @@
 *   global_info: stirng contains global_info 
 return :true measn success, else false.
 */
-EASIAVEDITOR_API bool av_editor_create(const std::string &videotracklist, const std::string &audiotracklist, const std::string &zoomlist, const std::string &global_info);
+EASIAVEDITOR_API bool av_editor_create(const char* videotracklist, const char* audiotracklist, const char* zoomlist, const char* global_info);
 
 /*
 *Summary: register a callback function that report processing progress every-othersecond.

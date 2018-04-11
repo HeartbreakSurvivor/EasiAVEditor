@@ -30,6 +30,8 @@ public:
     void stop();
 
 private:
+    float timeformat_convert(const std::string &timestr);
+
     //video and audio filters
     void attach_video_fadein_filter(const std::string &in, const std::string &out);
     void attach_video_fadeout_filter(const std::string &in, const std::string &out);
@@ -55,7 +57,7 @@ private:
     void add_video_overlay_transition(uint16_t a_track, uint16_t b_track);
 
     //attach zoom animation
-    void add_geometry();
+    std::string EasiAVEditorGenerator::add_geometry(std::string x_ratio, std::string y_ratio, std::string width_ratio, std::string height_ratio);
     void add_zoom_animation_filter();
 
     //consumer settings
@@ -72,6 +74,7 @@ private:
 
 private:
     int _videotracks, _audiotracks, _tracks;//all kinds of tracks
+    int _framerate;
     Json::Value _jsonvideolist;
     Json::Value _jsonaudiolist;
     Json::Value _jsonzoomlist;
@@ -82,7 +85,7 @@ private:
     std::string _transitionPara;//store zoom in/out temp para.
     std::string _zoomlistPara;//store zoom in/out temp para.
     std::string _consumerPara;//store xml or avforamt consumer's configuration
-
+    std::string _duration;//the total length of video
     std::string _mltfilepath;//store the temp mlt file's name and path.
 
     std::string _MeltParameters;//final melt parameters

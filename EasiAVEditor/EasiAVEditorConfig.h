@@ -6,13 +6,16 @@ const static double GAIN_MIN = 0.00316228;
 const static double GAIN_MAX = 15.8489;
 
 //consumer related settings
-const unsigned int FRAMET_RATE = 25;
+const std::string VIDEO_FRAMERATE = " frame_rate_num=";
 const std::string VIDEO_CODEC = " vcodec=mpeg4";
 const std::string AUDIO_CODEC = " acodec=aac";
 const std::string VIDEO_BITRATE = " vb=4M";
-const std::string AUDIO_SAMPLE_RATE= " ar=48000";
+const std::string AUDIO_SAMPLE_RATE= " ar=";
 const std::string AUDIO_BITRATE = " ab=192k";
 const std::string AUDIO_CHANNEL = " ac=2";
+const std::string VIDEO_WIDTH = " width=";
+const std::string VIDEO_HEIGHT = " height=";
+
 
 //track json key
 const static std::string RESOURCE_PATH = "path";
@@ -38,12 +41,16 @@ const static std::string ISAUDIOSOURCE = "isAudioSource";
 
 //zoom list json key
 const static std::string SCALEGEOMETRY = "scaleGeometry";
+const static std::string GEOMETRY_X = "xRatio";
+const static std::string GEOMETRY_Y = "yRatio";
+const static std::string GEOMETRY_WIDTH = "widthRatio";
+const static std::string GEOMETRY_HEIGHT = "heightRatio";
 
 //global key
 const static std::string TARGET_PATH = "path";
 const static std::string RESOLUTION = "resolution";
 const static std::string TOTAL_DURATION = "totalDuration";
-const static std::string FRAME_RATE = "framerate";
+const static std::string FRAME_RATE = "frameRate";
 const static std::string SAMPLERATE = "sampleRate";
 
 //msg type 
