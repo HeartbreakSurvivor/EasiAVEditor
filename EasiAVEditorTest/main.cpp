@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -43,9 +44,8 @@ std::string add_geometry(std::string x_ratio, std::string y_ratio, std::string w
     return geometry;
 }
 
-float timeformat_convert(const std::string & timestr)
+float timeStr2second(const std::string & timestr)
 {
-    //"00:00:34.3820000"
     float total_seconds;
     int first_colon = timestr.find(':');
     int second_colon = timestr.find(':', first_colon + 1);
@@ -57,14 +57,41 @@ float timeformat_convert(const std::string & timestr)
     return total_seconds;
 }
 
+std::string second2timeStr(float seconds)
+{
+    std::string str;
+    char buf[10];
+    unsigned int millisecond = (unsigned int)(seconds * 1000);
+    int hour = seconds / 3600000;
+    int minute = millisecond / 60000 % 60000;
+    //int second = (millisecond % 60000) / 1000;
+    float second = (float)(millisecond % 60000)/1000;
+
+    std::cout << "hour: " << hour << "  minute: " << minute << "  second: " << second << std::endl;
+    sprintf_s(buf, sizeof(buf), "%02d", hour);
+    str.append(buf);
+    str.append(":");
+    sprintf_s(buf, sizeof(buf), "%02d", minute);
+    str.append(buf);
+    str.append(":");
+    sprintf_s(buf, sizeof(buf), "%.3f", second);
+    str.append(buf);
+    return str;
+}
+
+
 int main()
 {
     //13.91% / 9.44%:83.83%x86.81%
-    std::string halo =  add_geometry("1.202312321", "-1.731231230", "0.7812312", "0.3231123120");
-    cout << halo << endl;
+    //std::string halo =  add_geometry("1.202312321", "-1.731231230", "0.7812312", "0.3231123120");
+    //cout << halo << endl;
 
-    //float seconds = timeformat_convert("00:20:34.3820000");
+    //float seconds = timeStr2second("00:01:34.3820000");
     //cout << seconds << endl;
+    //std::string str = second2timeStr(seconds);
+
+    //std::string fadeoutstart = second2timeStr(timeStr2second("00:01:34.3820000") - timeStr2second("00:00:1.5000000"));
+
 
     string cmd;
     bool res = av_editor_create("A","B","C","D");

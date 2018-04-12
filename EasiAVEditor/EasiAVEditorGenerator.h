@@ -30,26 +30,23 @@ public:
     void stop();
 
 private:
-    float timeformat_convert(const std::string &timestr);
+    float timeStr2second(const std::string &timestr);
+    std::string second2timeStr(float seconds);
 
     //video and audio filters
     void attach_video_fadein_filter(const std::string &in, const std::string &out);
     void attach_video_fadeout_filter(const std::string &in, const std::string &out);
-    void attach_volume_fadein_filter(const std::string &in, const std::string &out);
-    void attach_volume_fadeout_filter(const std::string &in, const std::string &out);
-    void attach_volume_gain_filter(float percentage);
+    std::string attach_volume_fadein_filter(const std::string &in, const std::string &out);
+    std::string attach_volume_fadeout_filter(const std::string &in, const std::string &out);
+    std::string attach_volume_gain_filter(float percentage);
     void attach_video_scale_filter(float x, float y, float width, float height);
     void attach_timewrarp_filter(uint16_t speedratio);
-
-    //appl filters to corresponding video&audio clips.
-    void attach_videoclips_filters();
-    void attach_audioclips_filters();
 
     //generate video&audio single track and multitracks.
     void generate_video_tracks();
     void generate_audio_tracks();
-    void generate_video_multitracks();
-    void generate_audio_multitracks();
+    void generate_video_multitrack();
+    void generate_audio_multitrack();
 
     //add transition
     void generate_transitions();
@@ -82,6 +79,8 @@ private:
 
     std::vector<std::vector<std::string>> _videoMultitrack;//store multi video track's parameters.
     std::vector<std::vector<std::string>> _audioMultitrack;//store multi audio tracks's parameters.
+    std::vector<std::string> _audioTimewarp;//store the temporary speed control audio file path
+
     std::string _transitionPara;//store zoom in/out temp para.
     std::string _zoomlistPara;//store zoom in/out temp para.
     std::string _consumerPara;//store xml or avforamt consumer's configuration

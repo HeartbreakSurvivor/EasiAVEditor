@@ -3,7 +3,7 @@
 
 //volume gain value 
 const static double GAIN_MIN = 0.00316228;
-const static double GAIN_MAX = 15.8489;
+const static double GAIN_MAX = 5.8489;
 
 //consumer related settings
 const std::string VIDEO_FRAMERATE = " frame_rate_num=";
@@ -16,14 +16,13 @@ const std::string AUDIO_CHANNEL = " ac=2";
 const std::string VIDEO_WIDTH = " width=";
 const std::string VIDEO_HEIGHT = " height=";
 
-
 //track json key
 const static std::string RESOURCE_PATH = "path";
 const static std::string ABSOLUTE_STARTPOSITION = "absoluteStartPosition";
 const static std::string ABSOLUTE_EDNPOSITION = "absoluteEndPosition";
 const static std::string CLIPDURATION = "clipDuration";
-const static std::string CROP_STARTPOSITION = "cropStartDuration";
-const static std::string CROP_ENDPOSITION = "cropEndDuration";
+const static std::string CROP_STARTPOSITION = "cropStartPosition";
+const static std::string CROP_ENDPOSITION = "cropEndPosition";
 const static std::string VIDEOFADEIN_STARTPOSITION = "videoFadeInStartPosition";
 const static std::string VIDEOFADEIN_DURATION= "videoFadeInDuration";
 const static std::string VIDEOFADEOUT_STARTPOSITION = "videoFadeOutStartPosition";
