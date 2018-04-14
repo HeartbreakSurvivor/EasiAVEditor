@@ -44,6 +44,17 @@ std::string add_geometry(std::string x_ratio, std::string y_ratio, std::string w
     return geometry;
 }
 
+std::string attach_video_scale_filter(std::string x_ratio, std::string y_ratio, std::string width_ratio, std::string height_ratio)
+{
+    //-attach-clip affine background=colour:0 transition.geometry="0.00%/0.00%:86.02%x85.97%"
+    //std::string str(" -attach-clip affine background=colour:0 transition.geometry=\"00.00%/00.00%:00.00%x00.00%\"");
+    std::string str(" -attach-clip affine background=colour:0 transition.geometry=\"");
+    std::string geometry = add_geometry(x_ratio, y_ratio, width_ratio, height_ratio);
+    str.append(geometry);
+    str.append("\"");
+    return str;
+}
+
 float timeStr2second(const std::string & timestr)
 {
     float total_seconds;
@@ -85,13 +96,14 @@ int main()
     //13.91% / 9.44%:83.83%x86.81%
     //std::string halo =  add_geometry("1.202312321", "-1.731231230", "0.7812312", "0.3231123120");
     //cout << halo << endl;
-
+    //52.42%/50.14%:47.73%x53.06%
+    //halo = attach_video_scale_filter("0.5242312312321", "0.501431231230", "0.477327812312", "0.530623231123120");
+    //cout << halo << endl;
     //float seconds = timeStr2second("00:01:34.3820000");
     //cout << seconds << endl;
     //std::string str = second2timeStr(seconds);
 
     //std::string fadeoutstart = second2timeStr(timeStr2second("00:01:34.3820000") - timeStr2second("00:00:1.5000000"));
-
 
     string cmd;
     bool res = av_editor_create("A","B","C","D");

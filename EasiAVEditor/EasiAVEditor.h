@@ -41,7 +41,7 @@ EASIAVEDITOR_API void av_editor_register_msgcb(msgcbfun cb);
 *Summary: start parse string and generate melt command line parameters.
 *Parameters:
 *   none
-return :true measn success, else false.
+return :true measn success, else means parse json string failed.
 */
 EASIAVEDITOR_API bool av_editor_start();
 

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#define sub = 0.0000001f;
+
 //volume gain value 
 const static double GAIN_MIN = 0.00316228;
 const static double GAIN_MAX = 5.8489;

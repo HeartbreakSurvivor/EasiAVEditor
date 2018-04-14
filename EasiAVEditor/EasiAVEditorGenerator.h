@@ -32,21 +32,20 @@ public:
 private:
     float timeStr2second(const std::string &timestr);
     std::string second2timeStr(float seconds);
+    bool isFltEqual(float a, float b);
 
     //video and audio filters
-    void attach_video_fadein_filter(const std::string &in, const std::string &out);
-    void attach_video_fadeout_filter(const std::string &in, const std::string &out);
+    std::string attach_video_fadein_filter(const std::string &in, const std::string &out);
+    std::string attach_video_fadeout_filter(const std::string &in, const std::string &out);
     std::string attach_volume_fadein_filter(const std::string &in, const std::string &out);
     std::string attach_volume_fadeout_filter(const std::string &in, const std::string &out);
     std::string attach_volume_gain_filter(float percentage);
-    void attach_video_scale_filter(float x, float y, float width, float height);
-    void attach_timewrarp_filter(uint16_t speedratio);
+    std::string attach_video_scale_filter(float x_ratio, float y_ratio, float width_ratio, float height_ratio);
+    std::string attach_timewrarp_filter(float speedratio, std::string path, std::string cropstart, std::string cropend);
 
     //generate video&audio single track and multitracks.
-    void generate_video_tracks();
-    void generate_audio_tracks();
-    void generate_video_multitrack();
-    void generate_audio_multitrack();
+    bool generate_video_multitrack();
+    bool generate_audio_multitrack();
 
     //add transition
     void generate_transitions();
@@ -54,7 +53,7 @@ private:
     void add_video_overlay_transition(uint16_t a_track, uint16_t b_track);
 
     //attach zoom animation
-    std::string EasiAVEditorGenerator::add_geometry(std::string x_ratio, std::string y_ratio, std::string width_ratio, std::string height_ratio);
+    std::string add_geometry(float x_ratio, float y_ratio, float width_ratio, float height_ratio);
     void add_zoom_animation_filter();
 
     //consumer settings
