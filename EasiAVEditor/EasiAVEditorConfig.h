@@ -9,7 +9,7 @@ const static double GAIN_MAX = 5.8489;
 
 //consumer related settings
 const std::string VIDEO_FRAMERATE = " frame_rate_num=";
-const std::string VIDEO_CODEC = " vcodec=mpeg4";
+const std::string VIDEO_CODEC = " vcodec=libx264";
 const std::string AUDIO_CODEC = " acodec=aac";
 const std::string VIDEO_BITRATE = " vb=4M";
 const std::string AUDIO_SAMPLE_RATE= " ar=";
@@ -17,6 +17,7 @@ const std::string AUDIO_BITRATE = " ab=192k";
 const std::string AUDIO_CHANNEL = " ac=2";
 const std::string VIDEO_WIDTH = " width=";
 const std::string VIDEO_HEIGHT = " height=";
+const std::string REALTIME = " real_time=";
 
 //track json key
 const static std::string RESOURCE_PATH = "path";

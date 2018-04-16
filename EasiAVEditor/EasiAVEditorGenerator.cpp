@@ -44,7 +44,7 @@ bool EasiAVEditorGenerator::start()
     if (!generate_parameters()) return false;
     //return _pMeltService->AsyncStartmelt(_MeltParameters);
     //return _pMeltService->AsyncStartmelt(" D:\\Code\\EasiAVEditor\\Debug\\videos\\big_buck_1_min.mp4 in=\"00:00:10.000\" out=\"00:00:40.000\" -progress -consumer avformat:D:\\Code\\EasiAVEditor\\Debug\\videos\\slow.mp4");
-    return _pMeltService->Startmelt(" D:\\Code\\EasiAVEditor\\Debug\\videos\\big_buck_1_min.mp4 in=\"00:00:10.000\" out=\"00:00:40.000\" -progress -consumer avformat:D:\\Code\\EasiAVEditor\\Debug\\videos\\slow.mp4");
+    return _pMeltService->Startmelt(_MeltParameters);
 }
 
 void EasiAVEditorGenerator::stop()
@@ -75,7 +75,7 @@ std::string EasiAVEditorGenerator::second2timeStr(float seconds)
     //int second = (millisecond % 60000) / 1000;
     float second = (float)(millisecond % 60000) / 1000;
 
-    std::cout << "hour: " << hour << "  minute: " << minute << "  second: " << second << std::endl;
+    //std::cout << "hour: " << hour << "  minute: " << minute << "  second: " << second << std::endl;
     sprintf_s(buf, sizeof(buf), "%02d", hour);
     str.append(buf);
     str.append(":");
@@ -189,8 +189,8 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
     }
     std::string videotrack;
 
-    std::cout << "videotrack's size: " << _jsonvideolist.size();
-    std::cout << "videotrack is array: " << _jsonvideolist.isArray();
+    GLINFO << "videotrack's size: " << _jsonvideolist.size();
+    GLINFO << "videotrack is array: " << _jsonvideolist.isArray();
 
     std::string lastendpoint("00.00.00.000");
     for (int i = 0; i < _jsonvideolist.size(); i++) {
@@ -248,19 +248,19 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
                 _MeltParameters.append(str);
             }
 
-            if (!isFltEqual(timeStr2second(videofadeInDuration), 0.0f)) {
+            if (videofadeInDuration != "") {
                 std::string str = attach_video_fadein_filter("00:00:00.000", videofadeInDuration);
                 _MeltParameters.append(str);
             }
-            if (!isFltEqual(timeStr2second(videofadeOutDuration), 0.0f)) {
+            if (videofadeOutDuration != "") {
                 std::string str = attach_video_fadeout_filter(videofadeOutstartposition, clipduration);
                 _MeltParameters.append(str);
             }
-            if (!isFltEqual(timeStr2second(audiofadeInDuration), 0.0f)) {
+            if (audiofadeInDuration != "") {
                 std::string str = attach_volume_fadein_filter("00:00:00.000", audiofadeInDuration);
                 _MeltParameters.append(str);
             }
-            if (!isFltEqual(timeStr2second(audiofadeOutDuration), 0.0f)) {
+            if (audiofadeOutDuration != "") {
                 std::string str = attach_volume_fadeout_filter(audiofadeOutstartposition, clipduration);
                 _MeltParameters.append(str);
             }
@@ -269,7 +269,9 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
             }
             _MeltParameters.append(" ");
         }
-        _MeltParameters.append(" -track ");
+        if (i != _jsonvideolist.size() - 1) {
+            _MeltParameters.append(" -track ");
+        }
         _videotracks++;
         lastendpoint = std::string("00:00:00.000");
     }
@@ -286,8 +288,8 @@ bool EasiAVEditorGenerator::generate_audio_multitrack()
         GLINFO << "audio json list is empty ";
         return true;
     }
-    std::cout << "audiotrack's size: " << _jsonaudiolist.size();
-    std::cout << "audiotrack is array: " << _jsonaudiolist.isArray();
+    GLINFO << "audiotrack's size: " << _jsonaudiolist.size();
+    GLINFO << "audiotrack is array: " << _jsonaudiolist.isArray();
 
     std::string audioMultitrack(" ");//audiotrack temp parameters
 
@@ -322,10 +324,10 @@ bool EasiAVEditorGenerator::generate_audio_multitrack()
         audioMultitrack.append(cropEndPosition);//append the audio file's 
         audioMultitrack.append("\"");
 
-        if (timeStr2second(fadeInDuration) != 0.0f) {
+        if (fadeInDuration != "") {
             audioMultitrack.append(attach_volume_fadein_filter("00:00:00.000", fadeInDuration));
         }
-        if (timeStr2second(fadeOutDuration) != 0.0f) {
+        if (fadeOutDuration != "") {
             std::string fadeoutstart = second2timeStr(timeStr2second(clipduration) - timeStr2second(fadeOutDuration));
             audioMultitrack.append(attach_volume_fadeout_filter(fadeoutstart, clipduration));
         }
@@ -405,11 +407,9 @@ void EasiAVEditorGenerator::add_zoom_animation_filter()
         GLINFO << "zoom json list is empty ";
         return;
     }
-    _MeltParameters.clear();
-    _MeltParameters.append(_mltfilepath);
 
-    std::cout << "zoomlist's size: " << _jsonzoomlist.size() << std::endl;
-    std::cout << "zoomlist is array: " << _jsonzoomlist.isArray() << std::endl;
+    GLINFO << "zoomlist's size: " << _jsonzoomlist.size();
+    GLINFO << "zoomlist is array: " << _jsonzoomlist.isArray();
 
     _MeltParameters.append(" -filter affine transition.cycle=0 transition.geometry=\"");
 
@@ -438,18 +438,15 @@ void EasiAVEditorGenerator::add_zoom_animation_filter()
 
         timestamp = timeStr2second(startposition);
         std::string tmpstr = f(timestamp, geometry);
-        GLINFO << "zoom tmpstr: " << tmpstr;
         _MeltParameters.append(tmpstr);
 
         timestamp = timeStr2second(endposition);
         geometry = add_geometry(xratio, yratio, widthratio, heightratio);
         tmpstr = f(timestamp, geometry);
-        GLINFO << "zoom tmpstr: " << tmpstr;
         _MeltParameters.append(tmpstr);
     }
-
+    
     _MeltParameters.append("\"");
-    std::cout << "zoom filter: " << _MeltParameters << std::endl;
     GLINFO << "zoom filter parameters: " << _MeltParameters;
 }
 
@@ -464,14 +461,24 @@ void EasiAVEditorGenerator::generate_consumer_settings()
 
     _duration = _jsonglobalinfo[TOTAL_DURATION].asString();
     _framerate = std::stoi(framerate);
-    std::cout << "gloabl info: " << resolution << " " << _duration << " " << framerate << " " << samplerate << " " << std::endl;
+
+    GLINFO << "resolution: " << resolution << "\n" << "Duration: " << _duration << "\n" << "Framerate: " << framerate << "\n" 
+        << "Samplerate: " << samplerate << "\n";
+
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    int threadCount = si.dwNumberOfProcessors;
+    if (threadCount > 2)
+        threadCount = min(threadCount - 1, 4);
+    else
+        threadCount = 1;
 
     _consumerPara.append(" -progress");
     _consumerPara.append(" -getc");
     _consumerPara.append(" -consumer avformat target=\"");
     _consumerPara.append(CharsetUtils::ANSIStringToUTF8String(_jsonglobalinfo[TARGET_PATH].asString()));
     _consumerPara.append("\"");
-    _consumerPara.append(VIDEO_CODEC);
+    //_consumerPara.append(VIDEO_CODEC);
     _consumerPara.append(AUDIO_CODEC);
     _consumerPara.append(VIDEO_FRAMERATE);
     _consumerPara.append(framerate);
@@ -481,11 +488,12 @@ void EasiAVEditorGenerator::generate_consumer_settings()
     _consumerPara.append(AUDIO_CHANNEL);
     _consumerPara.append(VIDEO_WIDTH);
     _consumerPara.append(width);
-    _consumerPara.append(VIDEO_WIDTH);
+    _consumerPara.append(VIDEO_HEIGHT);
     _consumerPara.append(height);
+    _consumerPara.append(REALTIME);
+    _consumerPara.append(std::to_string(-threadCount));
 
     GLINFO << "consumer melt parameters: " << _consumerPara;
-    //_MeltParameters.append(_consumerPara);
 }
 
 bool EasiAVEditorGenerator::generate_parameters()
@@ -498,16 +506,17 @@ bool EasiAVEditorGenerator::generate_parameters()
     generate_transitions();
     //generate the mlt file
     generate_mlt_file();
-    //output the melt command line to log.
-    //formatting_parameters();
+    //add zoom animation effect
     add_zoom_animation_filter(); 
     _MeltParameters.append(_consumerPara);
+    formatting_parameters();
     return true;
 }
 
 void EasiAVEditorGenerator::formatting_parameters()
 {
-
+    GLINFO << "Total MeltParameters: \n" << _MeltParameters;
+    //_MeltParameters;
 }
 
 void EasiAVEditorGenerator::generate_mlt_file()
@@ -518,13 +527,37 @@ void EasiAVEditorGenerator::generate_mlt_file()
     time_t timep;
     time(&timep);
     localtime_s(&t, &timep);
-    char tmp[64];
-    strftime(tmp, sizeof(tmp), " jjs-%Y-%m-%d-%H-%M-%S.mlt", &t);
-    _mltfilepath.assign(tmp);
+    //create mlt temp file directory.
+    char diretory[64];
+    strftime(diretory, sizeof(diretory), "%Y%m%d%H%M%S", &t);
+    std::string Tempfiledir(diretory, sizeof(diretory));
+    std::wstring WTempfiledir;
+    CharsetUtils::ANSIStringToUnicodeString(Tempfiledir, WTempfiledir);
+    std::wstring dirName = std::wstring(PathUtils::GetAppDataWPath()) + L"\\Mlt\\" + WTempfiledir + L"\\";
+    boost::filesystem::wpath path(dirName);
+    if (!boost::filesystem::exists(path.parent_path()))
+    {
+        boost::filesystem::create_directories(path.parent_path());
+    }
+    std::string dir;
+    CharsetUtils::UnicodeStringToANSIString(dirName, dir);
+
+    //create mlt file
+    char mltfile[64];
+    strftime(mltfile, sizeof(mltfile), "jjs-%Y-%m-%d-%H-%M-%S.mlt", &t);
+    
+    _mltfilepath.append("\"");
+    _mltfilepath.append(dir);
+    _mltfilepath.append(mltfile);
+    _mltfilepath.append("\"");
     str.append(_mltfilepath);
     GLINFO << "temporary mlt file's name & path: " << str;
     _MeltParameters.append(str);
-    _pMeltService->Startmelt(str);
+    //output the melt command line to log.
+    formatting_parameters();
+    _pMeltService->Startmelt(_MeltParameters);
+    _MeltParameters.clear();
+    _MeltParameters.append(_mltfilepath);
 }
 
 

@@ -77,7 +77,7 @@ void MeltService::MsgReport_cbfun(msgcbfun func)
 std::wstring MeltService::Get_melt_Path()
 {
     //std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\Extensions\\MeltModules\\melt.exe";
-    std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\melt.exe";
+    std::wstring appPath = L"C:\\Program Files\\Shotcut\\melt.exe";
     return appPath;
 }
 
@@ -86,7 +86,7 @@ void MeltService::WorkingThread(const std::wstring &paras)
     int timeout = 20;
     _bIsRunning = true;
     std::wstring executePath = Get_melt_Path();
-    std::wstring comlin = executePath + paras;
+    std::wstring comlin = executePath + L" " + paras;
     LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
     //create a anonymous pipe to get result from melt process
