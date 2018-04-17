@@ -42,8 +42,9 @@ void EasiAVEditorGenerator::setMsgReportcb(msgcbfun func)
 bool EasiAVEditorGenerator::start()
 {
     if (!generate_parameters()) return false;
-    //return _pMeltService->AsyncStartmelt(_MeltParameters);
-    return _pMeltService->AsyncStartmelt("C:\\Users\\bigzh\\AppData\\Roaming\\EasiAVEditorTest\\Mlt\\20180417201509\\halo.mlt -consumer avformat target=halo.mp4 -progress -getc vcodec=libx264 acodec=aac frame_rate_num=25 ar=44100 ab=192k ac=2 width=1920 height=1080 real_time=-4 progressive=1 ");
+    return _pMeltService->AsyncStartmelt(_MeltParameters);
+    //return _pMeltService->AsyncStartmelt(" C:\\Users\\bigzh\\AppData\\Roaming\\EasiAVEditorTest\\Mlt\\20180417210249\\halo.mlt -consumer avformat target=halo.mp4 -progress vcodec=libx264 acodec=aac frame_rate_num=25 ar=44100 ab=192k ac=2 width=1920 height=1080 real_time=-4 progressive=1 ");
+    //return _pMeltService->AsyncStartmelt(" D:\\Code\\EasiAVEditor\\Debug\\videos\\big_buck_1_min.mp4 in=\"00:00:10.000\" out=\"00:00:40.000\" -consumer avformat:D:\\Code\\EasiAVEditor\\Debug\\videos\\slow.mp4 -progress vcodec=libx264 acodec=aac frame_rate_num=25 width=1920 height=1080 real_time=-4");
 }
 
 void EasiAVEditorGenerator::stop()
@@ -538,7 +539,7 @@ void EasiAVEditorGenerator::generate_consumer_settings()
     _consumerPara.append(CharsetUtils::ANSIStringToUTF8String(_jsonglobalinfo[TARGET_PATH].asString()));
     _consumerPara.append("\"");
     _consumerPara.append(" -progress");
-    _consumerPara.append(" -getc");
+    //_consumerPara.append(" -getc");
     _consumerPara.append(VIDEO_CODEC);
     _consumerPara.append(AUDIO_CODEC);
     _consumerPara.append(VIDEO_FRAMERATE);
