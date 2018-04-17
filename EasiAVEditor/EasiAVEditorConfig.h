@@ -18,6 +18,7 @@ const std::string AUDIO_CHANNEL = " ac=2";
 const std::string VIDEO_WIDTH = " width=";
 const std::string VIDEO_HEIGHT = " height=";
 const std::string REALTIME = " real_time=";
+const std::string PROGRESSIVE = " progressive=1";
 
 //track json key
 const static std::string RESOURCE_PATH = "path";

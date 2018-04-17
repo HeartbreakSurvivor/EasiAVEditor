@@ -87,8 +87,14 @@ void MeltService::WorkingThread(const std::wstring &paras)
     _bIsRunning = true;
     std::wstring executePath = Get_melt_Path();
     std::wstring comlin = executePath + L" " + paras;
+
     LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
+    std::string sstr;
+    bool f = CharsetUtils::UnicodeStringToANSIString(comlin, sstr);
+
+    GLINFO << "\nMelt parar:\n " << sstr;
+
     //create a anonymous pipe to get result from melt process
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);

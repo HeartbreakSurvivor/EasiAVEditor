@@ -33,6 +33,7 @@ private:
     float timeStr2second(const std::string &timestr);
     std::string second2timeStr(float seconds);
     bool isFltEqual(float a, float b);
+    bool create_temporary_directory();
 
     //video and audio filters
     std::string attach_video_fadein_filter(const std::string &in, const std::string &out);
@@ -45,6 +46,8 @@ private:
 
     //generate video&audio single track and multitracks.
     bool generate_video_multitrack();
+    //some audio file may be speed up or slow down, generate temp timewarp file
+    std::string generate_audio_tmpfile(float speedratio, std::string path);
     bool generate_audio_multitrack();
 
     //add transition
@@ -71,6 +74,9 @@ private:
 private:
     int _videotracks, _audiotracks, _tracks;//all kinds of tracks
     int _framerate;
+    int _tempAudiofileNumber = 0;//how many audio file has been generated.
+    struct tm _t;
+
     Json::Value _jsonvideolist;
     Json::Value _jsonaudiolist;
     Json::Value _jsonzoomlist;
@@ -85,6 +91,8 @@ private:
     std::string _consumerPara;//store xml or avforamt consumer's configuration
     std::string _duration;//the total length of video
     std::string _mltfilepath;//store the temp mlt file's name and path.
+
+    std::wstring _tmpfileDir;//directory to store temporary files.
 
     std::string _MeltParameters;//final melt parameters
     std::unique_ptr<MeltService> _pMeltService;
