@@ -8,6 +8,7 @@
 
 typedef void(*progresscbfun)(int);
 typedef void(*msgcbfun)(int);
+typedef void(*resrptcbfun)(void);
 
 class MeltService
 {
@@ -20,6 +21,7 @@ public:
     bool Stopmelt();
     void ProgressReport_cbfun(progresscbfun func);
     void MsgReport_cbfun(msgcbfun func);
+    void Resrpt_cbfun(resrptcbfun func);
 
 private:
     std::wstring Get_melt_Path();
@@ -31,6 +33,7 @@ private:
     std::unique_ptr<std::thread> _wkThread;
     progresscbfun _progresscb = nullptr;
     msgcbfun _msgcb = nullptr;
+    resrptcbfun _rescb = nullptr;
     HANDLE _pipeOutputRead, _pipeInputWrite;
     //HANDLE _pipeOutputRead1, _pipeInputWrite1;
     PROCESS_INFORMATION _pi;

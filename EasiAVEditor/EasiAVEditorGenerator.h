@@ -71,7 +71,11 @@ private:
     //according to command line parameters to generate mlt file
     void generate_mlt_file();
 
+    //result report function
+    static void del_tmp_audiofile();
+
 private:
+    bool _clearflag = false;
     int _videotracks, _audiotracks, _tracks;//all kinds of tracks
     int _framerate;
     int _tempAudiofileNumber = 0;//how many audio file has been generated.
@@ -84,7 +88,7 @@ private:
 
     std::vector<std::vector<std::string>> _videoMultitrack;//store multi video track's parameters.
     std::vector<std::vector<std::string>> _audioMultitrack;//store multi audio tracks's parameters.
-    std::vector<std::string> _audioTimewarp;//store the temporary speed control audio file path
+    std::vector<std::string> _tmpAudiofilelist;//store the tmp audio file name.
 
     std::string _transitionPara;//store zoom in/out temp para.
     std::string _zoomlistPara;//store zoom in/out temp para.
@@ -98,5 +102,6 @@ private:
     std::unique_ptr<MeltService> _pMeltService;
 
     LoggerGuard _logger;
+    static EasiAVEditorGenerator* _avgenerator;
 };
 

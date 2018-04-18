@@ -74,6 +74,11 @@ void MeltService::MsgReport_cbfun(msgcbfun func)
     _msgcb = func;
 }
 
+void MeltService::Resrpt_cbfun(resrptcbfun func)
+{
+    _rescb = func;
+}
+
 std::wstring MeltService::Get_melt_Path()
 {
     //std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\Extensions\\MeltModules\\melt.exe";
@@ -88,10 +93,11 @@ void MeltService::WorkingThread(const std::wstring &paras)
     std::wstring executePath = Get_melt_Path();
     std::wstring comlin = executePath + L" " + paras;
 
-    LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
+    //LPTSTR sConLin = const_cast<LPTSTR>(comlin.c_str());
     
     std::string sstr;
-    bool f = CharsetUtils::UnicodeStringToANSIString(comlin, sstr);
+    bool f = CharsetUtils::UnicodeStringToUTF8String(comlin, sstr);
+    char* sConLin = const_cast<char *>(sstr.c_str());
 
     GLINFO << "\nMelt parar:\n " << sstr;
 
@@ -119,18 +125,33 @@ void MeltService::WorkingThread(const std::wstring &paras)
         _rwThread->detach();
     }
 
-    //create the melt.exe process
-    STARTUPINFO si;
-    si.cb = sizeof(STARTUPINFO);
-    GetStartupInfo(&si);
-    si.hStdError = _pipeInputWrite; //connect the stderr endpoint of process to write endpoint of anonymous pipe. so we can read the output from the pipe.
-    si.hStdOutput = _pipeInputWrite;    
-    //si.hStdInput = _pipeOutputRead1;//connect the stdinput to the read endpoint of pipe, so we can write data to melt process with pipe.
-    si.wShowWindow = SW_HIDE;
-    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+    ////create the melt.exe process
+    //STARTUPINFO si;
+    //si.cb = sizeof(STARTUPINFO);
+    //GetStartupInfo(&si);
+    //si.hStdError = _pipeInputWrite; //connect the stderr endpoint of process to write endpoint of anonymous pipe. so we can read the output from the pipe.
+    //si.hStdOutput = _pipeInputWrite;    
+    ////si.hStdInput = _pipeOutputRead1;//connect the stdinput to the read endpoint of pipe, so we can write data to melt process with pipe.
+    //si.wShowWindow = SW_HIDE;
+    //si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
 
-    if (!CreateProcess(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &_pi))
-    {
+    //if (!CreateProcess(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &si, &_pi))
+    //{
+    //    GLERROR << "CreateProcess failed, error code:" << GetLastError();
+    //    _msgcb(CREATE_MELT_FAILED);
+    //    goto failed;
+    //}
+    
+    STARTUPINFOA sia;
+    sia.cb = sizeof(STARTUPINFOA);
+    GetStartupInfoA(&sia);
+    sia.hStdError = _pipeInputWrite; //connect the stderr endpoint of process to write endpoint of anonymous pipe. so we can read the output from the pipe.
+    sia.hStdOutput = _pipeInputWrite;
+    //si.hStdInput = _pipeOutputRead1;//connect the stdinput to the read endpoint of pipe, so we can write data to melt process with pipe.
+    sia.wShowWindow = SW_HIDE;
+    sia.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+
+    if (!CreateProcessA(NULL, sConLin, NULL, NULL, TRUE, NULL, NULL, NULL, &sia, &_pi)) {
         GLERROR << "CreateProcess failed, error code:" << GetLastError();
         _msgcb(CREATE_MELT_FAILED);
         goto failed;
@@ -159,6 +180,7 @@ failed:
         if(_rwThread->joinable())
             _rwThread->join();
     }
+    _rescb();
 }
 
 void MeltService::ReadWriteThread(void)

@@ -3,11 +3,12 @@
 #include <time.h>
 #include <iostream>
 
-using namespace std;
+//static member variable initialize
+EasiAVEditorGenerator* EasiAVEditorGenerator::_avgenerator;
 
 EasiAVEditorGenerator::EasiAVEditorGenerator()
 {
-}
+}    
 
 EasiAVEditorGenerator::EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Value jsonAudiolist, Json::Value jsonZoomlist, Json::Value jsonGlobalinfo)
     : _jsonvideolist(jsonVideolist)
@@ -20,7 +21,10 @@ EasiAVEditorGenerator::EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Va
     , _framerate(25)
     , _logger()
 {
+    _avgenerator = this;
     _pMeltService = std::make_unique<MeltService>();
+    resrptcbfun cb = (resrptcbfun)&EasiAVEditorGenerator::del_tmp_audiofile;
+    _pMeltService->Resrpt_cbfun(cb);
 }
 
 EasiAVEditorGenerator::~EasiAVEditorGenerator()
@@ -42,8 +46,10 @@ void EasiAVEditorGenerator::setMsgReportcb(msgcbfun func)
 bool EasiAVEditorGenerator::start()
 {
     if (!generate_parameters()) return false;
+    _clearflag = true;
     return _pMeltService->AsyncStartmelt(_MeltParameters);
-    //return _pMeltService->AsyncStartmelt(" C:\\Users\\bigzh\\AppData\\Roaming\\EasiAVEditorTest\\Mlt\\20180417210249\\halo.mlt -consumer avformat target=halo.mp4 -progress vcodec=libx264 acodec=aac frame_rate_num=25 ar=44100 ab=192k ac=2 width=1920 height=1080 real_time=-4 progressive=1 ");
+    //return _pMeltService->AsyncStartmelt(" C:\\Users\\bigzh\\AppData\\Roaming\\EasiAVEditorTest\\Mlt\\20180417210249\\halo.mlt -consumer avformat target=\"./一个很皮的人123man.mp4\" -progress vcodec=libx264 acodec=aac frame_rate_num=25 ar=44100 ab=192k ac=2 width=1920 height=1080 real_time=-4 progressive=1 ");
+    //return _pMeltService->AsyncStartmelt(u8" \"D:\\Code\\EasiAVEditor\\Debug\\videos\\你好\\big_buck_1_min.mp4\" out=00:00:5.000 -consumer avformat target=\"C:\\快剪辑视频\\我的视频.mp4\"");
     //return _pMeltService->AsyncStartmelt(" D:\\Code\\EasiAVEditor\\Debug\\videos\\big_buck_1_min.mp4 in=\"00:00:10.000\" out=\"00:00:40.000\" -consumer avformat:D:\\Code\\EasiAVEditor\\Debug\\videos\\slow.mp4 -progress vcodec=libx264 acodec=aac frame_rate_num=25 width=1920 height=1080 real_time=-4");
 }
 
@@ -94,6 +100,8 @@ bool EasiAVEditorGenerator::isFltEqual(float a, float b)
 
 bool EasiAVEditorGenerator::create_temporary_directory()
 {
+    if (!_tmpfileDir.empty()) return true;
+
     //get current time and form the mlt file name.
     time_t timep;
     time(&timep);
@@ -216,7 +224,8 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
     std::string lastendpoint("00.00.00.000");
     for (int i = 0; i < _jsonvideolist.size(); i++) {
         for (int j = 0; j < _jsonvideolist[i].size(); j++) {
-            std::string path = CharsetUtils::ANSIStringToUTF8String(_jsonvideolist[i][j][TARGET_PATH].asString());
+            //std::string path = CharsetUtils::ANSIStringToUTF8String(_jsonvideolist[i][j][TARGET_PATH].asString());
+            std::string path = _jsonvideolist[i][j][RESOURCE_PATH].asString();
             std::string startposition = _jsonvideolist[i][j][ABSOLUTE_STARTPOSITION].asString();
             std::string endposition = _jsonvideolist[i][j][ABSOLUTE_EDNPOSITION].asString();
             std::string clipduration = _jsonvideolist[i][j][CLIPDURATION].asString();
@@ -309,7 +318,7 @@ std::string EasiAVEditorGenerator::generate_audio_tmpfile(float speedratio, std:
     str.append(std::to_string(speedratio));
     str.append(":\"");
     str.append(path);
-    str.append(" -consumer avformat target=\"");
+    str.append("\" -consumer avformat target=\"");
 
     create_temporary_directory();
 
@@ -333,7 +342,11 @@ std::string EasiAVEditorGenerator::generate_audio_tmpfile(float speedratio, std:
     GLINFO << "temporary audio file generated successfully!";
 
     _tempAudiofileNumber++;
-    return str;
+    std::string tmpfilepath;
+    tmpfilepath.append(dir);
+    tmpfilepath.append(audioname);
+    _tmpAudiofilelist.push_back(tmpfilepath);
+    return tmpfilepath;
 }
 
 bool EasiAVEditorGenerator::generate_audio_multitrack()
@@ -348,7 +361,8 @@ bool EasiAVEditorGenerator::generate_audio_multitrack()
     std::string audioMultitrack(" ");//audiotrack temp parameters
 
     for (int i = 0; i< _jsonaudiolist.size(); i++) {
-        std::string path = CharsetUtils::ANSIStringToUTF8String(_jsonaudiolist[i][TARGET_PATH].asString());
+        //std::string path = CharsetUtils::ANSIStringToUTF8String(_jsonaudiolist[i][TARGET_PATH].asString());
+        std::string path = _jsonaudiolist[i][RESOURCE_PATH].asString();
         std::string startposition = _jsonaudiolist[i][ABSOLUTE_STARTPOSITION].asString();
         std::string endposition = _jsonaudiolist[i][ABSOLUTE_EDNPOSITION].asString();
         std::string clipduration = _jsonaudiolist[i][CLIPDURATION].asString();
@@ -362,9 +376,9 @@ bool EasiAVEditorGenerator::generate_audio_multitrack()
 
         audioMultitrack.append(" -hide-video ");
         if (timeStr2second(startposition) != 0.0f) {//the audio clip's startint point is not from zero, so add blank clip
-            audioMultitrack.append(" -blank out=\"");
+            audioMultitrack.append(" -blank out=");
             audioMultitrack.append(startposition);
-            audioMultitrack.append("\" ");
+            audioMultitrack.append(" ");
         }
         
         if (speedRatio != 1.0f) {
@@ -380,11 +394,10 @@ bool EasiAVEditorGenerator::generate_audio_multitrack()
             audioMultitrack.append("\"");//append the resource file's path 
         }
 
-        audioMultitrack.append(" in=\"");
+        audioMultitrack.append(" in=");
         audioMultitrack.append(cropStartPosition);//append the audio clip's start point related to the starting point of resource file. 
-        audioMultitrack.append("\" out=\"");
+        audioMultitrack.append(" out=");
         audioMultitrack.append(cropEndPosition);//append the audio file's 
-        audioMultitrack.append("\"");
 
         if (fadeInDuration != "") {
             audioMultitrack.append(attach_volume_fadein_filter("00:00:00.000", fadeInDuration));
@@ -465,7 +478,7 @@ std::string EasiAVEditorGenerator::add_geometry(float x_ratio, float y_ratio, fl
 
 void EasiAVEditorGenerator::add_zoom_animation_filter()
 {
-    if (!_jsonzoomlist.empty()) {
+    if (_jsonzoomlist.empty()) {
         GLINFO << "zoom json list is empty ";
         return;
     }
@@ -588,9 +601,7 @@ void EasiAVEditorGenerator::generate_mlt_file()
 {
     std::string str(" -consumer xml:");
     
-    if (_tmpfileDir.empty()) {
-        create_temporary_directory();
-    }
+    create_temporary_directory();
 
     std::string dir;
     CharsetUtils::UnicodeStringToANSIString(_tmpfileDir, dir);
@@ -614,4 +625,18 @@ void EasiAVEditorGenerator::generate_mlt_file()
     _tmpfileDir.clear();
 }
 
-
+void EasiAVEditorGenerator::del_tmp_audiofile()
+{
+    if (!_avgenerator->_clearflag) return;
+    if (_avgenerator->_tmpAudiofilelist.empty()) return;
+    GLINFO << "starting delete temporary audio file";
+    
+    while (!_avgenerator->_tmpAudiofilelist.empty())
+    {
+        std::string path = _avgenerator->_tmpAudiofilelist.back();
+        _avgenerator->_tmpAudiofilelist.pop_back();
+        boost::filesystem::path filePath(path);
+        boost::filesystem::remove(filePath);
+    }
+    _avgenerator->_clearflag = false;
+}
