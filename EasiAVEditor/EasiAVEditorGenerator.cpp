@@ -121,6 +121,30 @@ bool EasiAVEditorGenerator::create_temporary_directory()
     return true;
 }
 
+int EasiAVEditorGenerator::getrealTime() const
+{
+    int realtime = 1;
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    int threadCount = si.dwNumberOfProcessors;
+    threadCount = threadCount > 2 ? min(threadCount - 1, 4) : 1;
+    realtime = -threadCount;
+    return realtime;
+}
+
+bool EasiAVEditorGenerator::isImagefile(std::string str) const
+{
+    std::string substr(".jpg");
+    std::string substr1(".png");
+    std::string substr2(".jpeg");
+    if (str.rfind(substr) == (str.length() - substr.length()) ||
+        str.rfind(substr1) == (str.length() - substr1.length()) ||
+        str.rfind(substr2) == (str.length() - substr2.length())) {
+        return true;
+    }
+    return false;
+}
+
 std::string EasiAVEditorGenerator::attach_video_fadein_filter(const std::string & in, const std::string & out)
 {
     std::string str(" -attach-clip brightness level=\"");
@@ -221,6 +245,11 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
     GLINFO << "videotrack's size: " << _jsonvideolist.size();
     GLINFO << "videotrack is array: " << _jsonvideolist.isArray();
 
+    //append black background track.
+    _MeltParameters.append(" -producer color:black out=");
+    _MeltParameters.append(_duration);
+    _MeltParameters.append(" -track ");
+    _videotracks++;
     std::string lastendpoint("00.00.00.000");
     for (int i = 0; i < _jsonvideolist.size(); i++) {
         for (int j = 0; j < _jsonvideolist[i].size(); j++) {
@@ -254,8 +283,8 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
                 std::string str = second2timeStr((timeStr2second(startposition) - timeStr2second(lastendpoint)));
                 _MeltParameters.append(str);
                 _MeltParameters.append(" ");
-                lastendpoint = endposition;//update last end point
             }
+            lastendpoint = endposition;//update last end point
             if (!isFltEqual(speedRatio, 1.0f)) {
                 _MeltParameters.append(attach_timewrarp_filter(speedRatio, path, cropStartPosition, cropEndPosition));
             }
@@ -295,7 +324,9 @@ bool EasiAVEditorGenerator::generate_video_multitrack()
                 _MeltParameters.append(str);
             }
             if (!isFltEqual(volume, 1.0f)) {
-                _MeltParameters.append(attach_volume_gain_filter(volume));
+                if (!isImagefile(path)) {//if the resource file is not image then apply the volume filter
+                    _MeltParameters.append(attach_volume_gain_filter(volume));
+                }
             }
             _MeltParameters.append(" ");
         }
@@ -529,46 +560,64 @@ void EasiAVEditorGenerator::generate_consumer_settings()
 {
     std::wstring showpath = CharsetUtils::ANSIStringToUnicodeString(_jsonglobalinfo[TARGET_PATH].asString());
     std::string resolution = _jsonglobalinfo[RESOLUTION].asString();
-    std::string width = resolution.substr(0, resolution.find('X'));
-    std::string height = resolution.substr(resolution.find('X')+1,resolution.size());
+    _width = resolution.substr(0, resolution.find('X'));
+    _height = resolution.substr(resolution.find('X')+1,resolution.size());
     std::string framerate = _jsonglobalinfo[FRAME_RATE].asString();
     std::string samplerate = _jsonglobalinfo[SAMPLERATE].asString();
 
     _duration = _jsonglobalinfo[TOTAL_DURATION].asString();
     _framerate = std::stoi(framerate);
 
-    GLINFO << "resolution: " << resolution << "\n" << "Duration: " << _duration << "\n" << "Framerate: " << framerate << "\n" 
+    GLINFO <<"\nresolution: " << resolution << "\n" << "Duration: " << _duration << "\n" << "Framerate: " << framerate << "\n" 
         << "Samplerate: " << samplerate << "\n";
 
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    int threadCount = si.dwNumberOfProcessors;
-    if (threadCount > 2)
-        threadCount = min(threadCount - 1, 4);
-    else
-        threadCount = 1;
-
-    _consumerPara.append(" -consumer avformat target=\"");
+    //fucking processing parameters order
+    _consumerPara.append(" -consumer avformat");
+    //Use YouTube preset 
+    //Field Order https://www.provideocoalition.com/field_order/
+    _consumerPara.append(" top_field_first=0");
+    _consumerPara.append(" aspect=1.77778");
+    //indicate the configuration of encoder. to balance the encoding speed and quality
+    _consumerPara.append(" preset=fast");
+    _consumerPara.append(" r=");
+    _consumerPara.append(framerate);
+    //Constant Rate Factor -- control the quality of output video rang=0~51 the higer value, the low quality 
+    _consumerPara.append(" crf=21");
+    //ffmpeg option. Set the pixel interpolation mode.
+    _consumerPara.append(" rescale=bilinear");    
+    _consumerPara.append(VIDEO_CODEC);
+    _consumerPara.append(PROGRESSIVE);
+    _consumerPara.append(" movflags=+faststart");
+    //The numbers of B frame contorl
+    _consumerPara.append(" bf=2");
+    _consumerPara.append(" target=\"");
     _consumerPara.append(CharsetUtils::ANSIStringToUTF8String(_jsonglobalinfo[TARGET_PATH].asString()));
     _consumerPara.append("\"");
-    _consumerPara.append(" -progress");
-    //_consumerPara.append(" -getc");
-    _consumerPara.append(VIDEO_CODEC);
+    _consumerPara.append(AUDIO_BITRATE);
+    //ffmpeg --> deinterlace the input video(yet means "yet another deinterlacing filter") default value is send_frame.
+    //website: https://ffmpeg.org/ffmpeg-filters.html#yadif
+    _consumerPara.append(" deinterlace_method=yadif");
+    _consumerPara.append(VIDEO_HEIGHT);
+    _consumerPara.append(_height);
+    _consumerPara.append(REALTIME);
+    //get realtime cnt, apply parallelism.
+    _consumerPara.append(std::to_string(getrealTime()));
+    //ffmpeg choose the number of threads which will be used in the decoders
+    _consumerPara.append(" thread=0");
     _consumerPara.append(AUDIO_CODEC);
-    _consumerPara.append(VIDEO_FRAMERATE);
-    _consumerPara.append(framerate);
+    _consumerPara.append(" mlt_service=avformat");
+    //ffmpeg options. f means format, it can be indicated the input and output format.
+    _consumerPara.append(" f=mp4");
+    _consumerPara.append(VIDEO_WIDTH);
+    _consumerPara.append(_width);    
+    //the number of Key Frame
+    _consumerPara.append(" g=15");
     _consumerPara.append(AUDIO_SAMPLE_RATE);
     _consumerPara.append(samplerate);
-    _consumerPara.append(AUDIO_BITRATE);
     _consumerPara.append(AUDIO_CHANNEL);
-    _consumerPara.append(VIDEO_WIDTH);
-    _consumerPara.append(width);
-    _consumerPara.append(VIDEO_HEIGHT);
-    _consumerPara.append(height);
-    _consumerPara.append(REALTIME);
-    _consumerPara.append(std::to_string(-threadCount));
-    _consumerPara.append(PROGRESSIVE);
 
+    //global option
+    _consumerPara.append(" -progress");//display processing progress 
     GLINFO << "consumer melt parameters: " << _consumerPara;
 }
 
@@ -599,7 +648,13 @@ void EasiAVEditorGenerator::formatting_parameters()
 
 void EasiAVEditorGenerator::generate_mlt_file()
 {
-    std::string str(" -consumer xml:");
+    std::string str("");
+    if (_width == "1920" && _height == "1080") {
+        str.append(" -profile atsc_1080p_25 -consumer xml:");
+    }
+    else {
+        str.append(" -profile atsc_720p_25 -consumer xml:");
+    }
     
     create_temporary_directory();
 

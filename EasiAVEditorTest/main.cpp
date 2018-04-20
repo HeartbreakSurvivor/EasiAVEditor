@@ -15,7 +15,7 @@ void Msgreport(int num)
 {
     cout << "melt service msg code: " << num << endl;
     if (num == 0 || num == 1) {
-        //exit(1);
+        exit(1);
     }
 }
 
@@ -88,6 +88,19 @@ std::string second2timeStr(float seconds)
     sprintf_s(buf, sizeof(buf), "%.3f", second);
     str.append(buf);
     return str;
+}
+
+bool isImagefile(std::string str)
+{
+    std::string substr(".jpg");
+    std::string substr1(".png");
+    std::string substr2(".jpeg");
+    if (str.rfind(substr) == (str.length() - substr.length()) ||
+        str.rfind(substr1) == (str.length() - substr1.length()) ||
+        str.rfind(substr2) == (str.length() - substr2.length())) {
+        return true;
+    }
+    return false;
 }
 
 

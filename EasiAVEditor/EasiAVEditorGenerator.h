@@ -34,6 +34,8 @@ private:
     std::string second2timeStr(float seconds);
     bool isFltEqual(float a, float b);
     bool create_temporary_directory();
+    int getrealTime() const;
+    bool isImagefile(std::string str) const;
 
     //video and audio filters
     std::string attach_video_fadein_filter(const std::string &in, const std::string &out);
@@ -80,6 +82,7 @@ private:
     int _framerate;
     int _tempAudiofileNumber = 0;//how many audio file has been generated.
     struct tm _t;
+    std::string _width, _height;
 
     Json::Value _jsonvideolist;
     Json::Value _jsonaudiolist;

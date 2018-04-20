@@ -8,7 +8,7 @@ const static double GAIN_MIN = 0.00316228;
 const static double GAIN_MAX = 5.8489;
 
 //consumer related settings
-const std::string VIDEO_FRAMERATE = " frame_rate_num=";
+const std::string VIDEO_FRAMERATE = " r=";
 const std::string VIDEO_CODEC = " vcodec=libx264";
 const std::string AUDIO_CODEC = " acodec=aac";
 const std::string VIDEO_BITRATE = " vb=4M";
