@@ -186,11 +186,12 @@ failed:
 void MeltService::ReadWriteThread(void)
 {
     GLINFO << "ReadWrite pipe thread start...";
-    char buffer[64] = { 0 };
+    char buffer[512] = { 0 };
     DWORD bytesRead;
+    int cnt = 0;
     while (true)
     {
-        int res = ReadFile(_pipeOutputRead, buffer, 64, &bytesRead, NULL);
+        int res = ReadFile(_pipeOutputRead, buffer, sizeof(buffer), &bytesRead, NULL);
         if (!res && GetLastError() == ERROR_BROKEN_PIPE) {
             GLINFO << "the pipe's write handle has been closed, exit readwrite thread.";
             if (!_bIsRunning) {
@@ -207,20 +208,22 @@ void MeltService::ReadWriteThread(void)
             GLINFO << "there is no data come from pipe or other error occurs, error code: " << GetLastError();
             break;
         }
-
-        GLINFO << "bytesRead: " << bytesRead;
-        std::string s(std::begin(buffer), std::begin(buffer) + bytesRead);
-        GLINFO << "extract string: " << s;
-        unsigned int index = s.find("percentage:");
-        if (index != std::string::npos) {
-            if ((index + std::strlen("percentage:") + 11) <= s.length()) {//this means the distance between 'p' and the last character.
-                std::string tmpstr;
-                tmpstr = s.substr(index + std::strlen("percentage:"), 11);
-                int percent = atoi(tmpstr.c_str());
-                if (percent != _previousPercent && _bIsAsync)
-                    _progresscb(percent);
-                _previousPercent = percent;
-                GLINFO << "melt output current percentage: " << percent << "%";
+        if (cnt++ == 5) {//to control the percentage info parsing frequency.
+            cnt = 0;
+            //GLINFO << "bytesRead: " << bytesRead;
+            std::string s(std::begin(buffer), std::begin(buffer) + bytesRead);
+            //GLINFO << "extract string: " << s;
+            unsigned int index = s.find("percentage:");
+            if (index != std::string::npos) {
+                if ((index + std::strlen("percentage:") + 11) <= s.length()) {//this means the distance between 'p' and the last character.
+                    std::string tmpstr;
+                    tmpstr = s.substr(index + std::strlen("percentage:"), 11);
+                    int percent = atoi(tmpstr.c_str());
+                    if (percent != _previousPercent && _bIsAsync)
+                        _progresscb(percent);
+                    _previousPercent = percent;
+                    //GLINFO << "melt output current percentage: " << percent << "%";
+                }
             }
         }
     }
