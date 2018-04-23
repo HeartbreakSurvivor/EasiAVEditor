@@ -15,6 +15,8 @@ EasiAVEditorGenerator::EasiAVEditorGenerator(Json::Value jsonVideolist, Json::Va
     , _jsonaudiolist(jsonAudiolist)
     , _jsonzoomlist(jsonZoomlist)
     , _jsonglobalinfo(jsonGlobalinfo)
+    , _MeltParameters(u8"")
+    , _consumerPara(u8"")
     , _videotracks(0)
     , _audiotracks(0)
     , _tracks(0)
@@ -520,7 +522,7 @@ void EasiAVEditorGenerator::add_zoom_animation_filter()
     _MeltParameters.append(" -filter affine transition.cycle=0 transition.geometry=\"");
 
     auto f = [this](float timestamp, std::string geometry) {
-        std::string str;
+        std::string str(u8"");
         int frame = static_cast<int>(timestamp * _framerate);
         str.append(std::to_string(frame));
         str.append("=");
@@ -648,7 +650,7 @@ void EasiAVEditorGenerator::formatting_parameters()
 
 void EasiAVEditorGenerator::generate_mlt_file()
 {
-    std::string str("");
+    std::string str(u8"");
     if (_width == "1920" && _height == "1080") {
         str.append(" -profile atsc_1080p_25 -consumer xml:");
     }
@@ -670,6 +672,10 @@ void EasiAVEditorGenerator::generate_mlt_file()
     _mltfilepath.append(mltfile);
     _mltfilepath.append("\"");
     str.append(_mltfilepath);
+    //other consumer xml properties
+    str.append(" time_format=\"clock\"");
+    str.append(" no_meta=1");
+    //str.append(" store=\"jjs\" ");
     GLINFO << "temporary mlt file's name & path: " << str;
     _MeltParameters.append(str);
     //output the melt command line to log.
