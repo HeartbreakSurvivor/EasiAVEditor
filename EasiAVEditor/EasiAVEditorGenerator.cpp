@@ -628,12 +628,18 @@ bool EasiAVEditorGenerator::generate_parameters()
     generate_consumer_settings();
     if(!generate_video_multitrack()) return false;
     if(!generate_audio_multitrack()) return false;
+#if !GEN_XML
+    add_zoom_animation_filter();
+#endif
     //generate audio mix and video composite transitions.
     generate_transitions();
+#if GEN_XML
     //generate the mlt file
     generate_mlt_file();
+    
     //add zoom animation effect
     add_zoom_animation_filter(); 
+#endif
     _MeltParameters.append(_consumerPara);
     GLINFO << "\nMeltParameters & Consumer: \n" << "\t" << _MeltParameters;
     return true;

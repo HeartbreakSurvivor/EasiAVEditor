@@ -26,16 +26,21 @@ bool av_editor_create(const char* videotracklist, const char* audiotracklist, co
 {
     Json::Reader jsonReader;
     Json::Value jsonVideolist,jsonAudiolist,jsonZoomlist,jsonGlobalinfo;
-    jsonVideolist = GetJson(L"D:\\Code\\EasiAVEditor\\video.txt");
+    /*jsonVideolist = GetJson(L"D:\\Code\\EasiAVEditor\\video.txt");
     jsonAudiolist = GetJson(L"D:\\Code\\EasiAVEditor\\audio.txt");
     jsonZoomlist = GetJson(L"D:\\Code\\EasiAVEditor\\zoom.txt");
-    jsonGlobalinfo = GetJson(L"D:\\Code\\EasiAVEditor\\global.txt");
-    //if (!jsonReader.parse(videotracklist, jsonVideolist) ||
-    //    !jsonReader.parse(audiotracklist, jsonAudiolist) ||
-    //    !jsonReader.parse(zoomlist, jsonZoomlist) ||
-    //    !jsonReader.parse(global_info, jsonGlobalinfo)) {
-    //    return false;
-    //}
+    jsonGlobalinfo = GetJson(L"D:\\Code\\EasiAVEditor\\global.txt");*/
+    //bool f = jsonReader.parse(std::string(zoomlist), jsonZoomlist);
+    //f = jsonReader.parse(std::string(videotracklist), jsonVideolist);
+    //f = jsonReader.parse(std::string(audiotracklist), jsonAudiolist);
+    //f = jsonReader.parse(std::string(global_info), jsonGlobalinfo);
+
+    if (!jsonReader.parse(std::string(videotracklist), jsonVideolist) ||
+        !jsonReader.parse(std::string(audiotracklist), jsonAudiolist) ||
+        !jsonReader.parse(std::string(zoomlist), jsonZoomlist) ||
+        !jsonReader.parse(std::string(global_info), jsonGlobalinfo)) {
+        return false;
+    }
     EasiAVEditor = std::make_unique<EasiAVEditorGenerator>(jsonVideolist,jsonAudiolist,jsonZoomlist,jsonGlobalinfo);
     return true;
 }

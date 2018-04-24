@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#define GEN_XML       1
+
 #define sub = 0.0000001f;
 
 //volume gain value 
@@ -63,3 +65,4 @@ enum MsgType
     CREATE_MELT_FAILED,
     FAILED,
 };
+

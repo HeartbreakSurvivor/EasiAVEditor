@@ -149,12 +149,15 @@
     <ClCompile Include="EasiAVEditor.cpp" />
     <ClCompile Include="EasiAVEditorGenerator.cpp" />
     <ClCompile Include="MeltService.cpp" />
+    <ClCompile Include="MeltXmlGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EasiAVEditor.h" />
     <ClInclude Include="EasiAVEditorConfig.h" />
     <ClInclude Include="EasiAVEditorGenerator.h" />
     <ClInclude Include="MeltService.h" />
+    <ClInclude Include="MeltXmlGenerator.h" />
+    <ClInclude Include="xml\rapidxml.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

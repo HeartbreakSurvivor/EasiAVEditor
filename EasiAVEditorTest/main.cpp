@@ -103,6 +103,13 @@ bool isImagefile(std::string str)
     return false;
 }
 
+const char *video = u8"[[{\"videoFadeInStartPosition\":null,\"videoFadeOutStartPosition\":null,\"videoFadeInDuration\":null,\"videoFadeOutDuration\":null,\"audioFadeInStartPosition\":null,\"audioFadeOutStartPosition\":null,\"videoGeometry\":{\"xRatio\":0.0,\"yRatio\":0.0,\"widthRatio\":1.0,\"heightRatio\":1.0},\"path\":\"D:/FFmpegKit/TestVideo/bunny.mp4\",\"absoluteStartPosition\":\"00:00:00.000\",\"absoluteEndPosition\":\"00:01:00.000\",\"clipDuration\":\"00:01:00.000\",\"cropStartPosition\":\"00:00:00.000\",\"cropEndPosition\":\"00:01:00.000\",\"audioFadeInDuration\":null,\"audioFadeOutDuration\":null,\"speedRatio\":1.0,\"volume\":0.0}]]";
+char *audio = u8"[{\"isAudioSource\":true,\"path\":\"D:/FFmpegKit/Adrian Von Ziegler - The Sylvans Path.mp3\",\"absoluteStartPosition\":\"00:00:00.000\",\"absoluteEndPosition\":\"00:01:00.000\",\"clipDuration\":\"00:01:00.000\",\"cropStartPosition\":\"00:00:00.000\",\"cropEndPosition\":\"00:01:00.000\",\"audioFadeInDuration\":null,\"audioFadeOutDuration\":null,\"speedRatio\":1.0,\"volume\":1.0}]";
+char *zoom = u8"[]";
+//const char* global = "{\"resolution\":\"1920X1080\",\"totalDuration\":\"00:01:00.000\",\"path\":\"D:\jjs_test\jjs_test_proj\liantiao.mp4\","
+//"\"frameRate\":25.0,\"sampleRate\":44100.0}";
+
+const char *global = u8"{\"resolution\":\"1920X1080\",\"totalDuration\":\"00:01:00.000\",\"path\":\"D:/jjs_test/jjs_test_proj/liantiao.mp4\",\"frameRate\":25.0,\"sampleRate\":44100.0}";
 
 int main()
 {
@@ -119,7 +126,7 @@ int main()
     //std::string fadeoutstart = second2timeStr(timeStr2second("00:01:34.3820000") - timeStr2second("00:00:1.5000000"));
 
     string cmd;
-    bool res = av_editor_create("A","B","C","D");
+    bool res = av_editor_create(video, audio, zoom, global);
     if (!res) {
         std::cout << "easiaveditor create failed." << std::endl;
     }
