@@ -81,7 +81,6 @@ void MeltService::Resrpt_cbfun(resrptcbfun func)
 
 std::wstring MeltService::Get_melt_Path()
 {
-    //std::wstring appPath = std::wstring(PathUtils::GetAppExecuteWPath()) + L"\\Extensions\\MeltModules\\melt.exe";
     std::wstring appPath = L"C:\\Program Files\\Shotcut\\melt.exe";
     return appPath;
 }

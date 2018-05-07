@@ -26,15 +26,6 @@ bool av_editor_create(const char* videotracklist, const char* audiotracklist, co
 {
     Json::Reader jsonReader;
     Json::Value jsonVideolist,jsonAudiolist,jsonZoomlist,jsonGlobalinfo;
-    /*jsonVideolist = GetJson(L"D:\\Code\\EasiAVEditor\\video.txt");
-    jsonAudiolist = GetJson(L"D:\\Code\\EasiAVEditor\\audio.txt");
-    jsonZoomlist = GetJson(L"D:\\Code\\EasiAVEditor\\zoom.txt");
-    jsonGlobalinfo = GetJson(L"D:\\Code\\EasiAVEditor\\global.txt");*/
-    //bool f = jsonReader.parse(std::string(zoomlist), jsonZoomlist);
-    //f = jsonReader.parse(std::string(videotracklist), jsonVideolist);
-    //f = jsonReader.parse(std::string(audiotracklist), jsonAudiolist);
-    //f = jsonReader.parse(std::string(global_info), jsonGlobalinfo);
-
     if (!jsonReader.parse(std::string(videotracklist), jsonVideolist) ||
         !jsonReader.parse(std::string(audiotracklist), jsonAudiolist) ||
         !jsonReader.parse(std::string(zoomlist), jsonZoomlist) ||
